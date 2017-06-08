@@ -16,15 +16,9 @@ contract owned {
 contract Petunia is owned {
 
   struct Payment {
-    uint price;
     address paymentContract;
     bool isDefined;
   }
-
-  event NewPayment(string externalPaymentId, uint price);
-  event PaymentRefunded(string externalPaymentId);
-  event PaymentCompleted(string externalPaymentId, uint petuniaBalance, uint paymentAccountBalance);
-  event PaymentSuccess(string externalPaymentId, uint petuniaBalance, uint paymentAccountBalance);
 
   mapping (string => Payment) payments;
 
@@ -48,8 +42,7 @@ contract Petunia is owned {
       throw;
     } else {
       PaymentContract paymentContract = new PaymentContract(price);
-      payments[externalPaymentId] = Payment(price, paymentContract, true);
-      NewPayment(externalPaymentId, price);
+      payments[externalPaymentId] = Payment(paymentContract, true);
     }
   }
 
@@ -60,9 +53,9 @@ contract Petunia is owned {
     } else {
       PaymentContract paymentContract = PaymentContract(payment.paymentContract);
       uint payedPrice = msg.value;
-      if(payedPrice == payment.price) {
+      uint price = paymentContract.price();
+      if(payedPrice == price) {
         paymentContract.pay.value(payedPrice)(msg.sender);
-        PaymentSuccess(externalPaymentId, this.balance, paymentContract.balance);
       } else {
         throw;
       }
@@ -75,8 +68,7 @@ contract Petunia is owned {
       PaymentContract paymentContract = PaymentContract(payment.paymentContract);
       if(!paymentContract.isCompleted()) {
         paymentContract.complete();
-        owner.transfer(payment.price);
-        PaymentCompleted(externalPaymentId, this.balance, paymentContract.balance);
+        owner.transfer(paymentContract.price());
       } else {
         throw;
       }
@@ -96,7 +88,6 @@ contract Petunia is owned {
     Payment payment = payments[externalPaymentId];
     if(payment.isDefined) {
       PaymentContract(payment.paymentContract).refund();
-      PaymentRefunded(externalPaymentId);
     } else {
       throw;
     }
@@ -107,7 +98,7 @@ contract Petunia is owned {
 }
 
 contract PaymentContract is owned {
-    uint price;
+    uint public price;
     bool completed;
     address buyerAddress;
 
