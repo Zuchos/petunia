@@ -14,11 +14,19 @@ const getBalance = (account) => {
   });
 };
 
+const getGasPrice = () => {
+  return new Promise((resolve, reject) => {
+    web3.eth.getGasPrice((error, result) => {
+      if (error) reject();
+      else resolve(result);
+    });
+  });
+};
 const assertBalance = (account, expectedBalance) => {
   return getBalance(account).then(balance => assert.equals(balance, expectedBalance));
 };
 
-const price = web3.toWei('20', 'ether');
+const price = web3.toBigNumber(web3.toWei(20, 'ether'));
 
 contract('Petunia', (accounts) => {
 
@@ -38,20 +46,25 @@ contract('Petunia', (accounts) => {
   //   });
   // });
   //
-  // it('should check if payument exist', () => {
-  //   const paymentId = 'test2';
-  //   return petunia.checkIfPaymentExists.call(paymentId).then((result) => {
-  //     assert.equal(result, false);
-  //   }).then(() => {
-  //     return petunia.startNewPayment(paymentId, price, {
-  //       from: accounts[0]
-  //     });
-  //   }).then(() => {
-  //     return petunia.checkIfPaymentExists.call(paymentId).then((result) => {
-  //       assert.equal(result, true);
-  //     });
-  //   });
-  // });
+
+  it('should check if payument exist', () => {
+    const paymentId = 'test2';
+    Petunia.deployed().then((instance) => {
+      petunia = instance;
+      console.log("here we start test!!!!");
+      return petunia.checkIfPaymentExists.call(paymentId).then((result) => {
+        assert.equal(result, false);
+      }).then(() => {
+        return petunia.startNewPayment(paymentId, price, {
+          from: accounts[0]
+        });
+      }).then(() => {
+        return petunia.checkIfPaymentExists.call(paymentId).then((result) => {
+          assert.equal(result, true);
+        });
+      });
+    });
+  });
   //
   // it('payment creation should fail', () => {
   //   const paymentId = 'test3';
@@ -68,13 +81,21 @@ contract('Petunia', (accounts) => {
   //   });
   // });
 
+  it('should print the gas price', () => {
+    return getGasPrice().then((gasPrice) => {
+      if (gasPrice) {
+        console.log("Gas price:" + web3.fromWei(gasPrice, 'ether').toString(10));
+      }
+    });
+  });
+
   it('should follow the payment process to the successful end', () => {
     var petunia;
     const paymentId = 'test4';
     var initalSellerBalance, finalSellerBalance, initalBuyerBalance, finalBuyerBalance;
     const sellerAccount = accounts[0];
     const buyerAccount = accounts[2];
-    Petunia.deployed().then((instance) => {
+    return Petunia.deployed().then((instance) => {
       petunia = instance;
       console.log("here we start test!!!!");
       return getBalance(sellerAccount);
@@ -111,9 +132,13 @@ contract('Petunia', (accounts) => {
     }).then((balance) => {
       finalBuyerBalance = balance;
       const sellerDelta = finalSellerBalance.minus(initalSellerBalance);
-      console.log('buyerDelta:' + web3.fromWei(sellerDelta, 'ether'));
+      const sellerGas = price.minus(sellerDelta);
+      console.log('seller delta:' + web3.fromWei(sellerDelta, 'ether'));
+      console.log('seller gas  :' + web3.fromWei(sellerGas, 'ether'));
       const buyerDelta = finalBuyerBalance.minus(initalBuyerBalance);
-      console.log('sellerDelta:' + web3.fromWei(buyerDelta, 'ether'));
+      const buyerGas = price.plus(buyerDelta);
+      console.log('buyer delta:' + web3.fromWei(buyerDelta, 'ether'));
+      console.log('buyer gas  :' + web3.fromWei(buyerGas, 'ether'));
     }).catch((error) => {
       console.log("error:" + error);
       assert.equal(true, false);
