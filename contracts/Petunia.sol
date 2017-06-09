@@ -15,47 +15,41 @@ contract owned {
  */
 contract Petunia is owned {
 
-  struct Payment {
-    address paymentContract;
-    bool isDefined;
-  }
-
-  mapping (string => Payment) payments;
+  mapping (string => PaymentContract) payments;
 
   function isPaid(string externalPaymentId) constant returns (bool) {
-    Payment payment = payments[externalPaymentId];
-    if(payment.isDefined) {
-      return PaymentContract(payment.paymentContract).isPaid();
+    PaymentContract payment = payments[externalPaymentId];
+    if(payment.isDefined()) {
+      return payment.isPaid();
     } else {
       throw;
     }
   }
 
   function checkIfPaymentExists(string externalPaymentId) constant returns(bool) {
-    Payment payment = payments[externalPaymentId];
-    return payment.isDefined;
+    PaymentContract payment = payments[externalPaymentId];
+    address addr = payment;
+    return addr != 0x0;
   }
 
   function startNewPayment(string externalPaymentId, uint price) onlyOwner {
-    Payment payment = payments[externalPaymentId];
-    if(payment.isDefined) {
+    if(checkIfPaymentExists(externalPaymentId)) {
       throw;
     } else {
       PaymentContract paymentContract = new PaymentContract(price);
-      payments[externalPaymentId] = Payment(paymentContract, true);
+      payments[externalPaymentId] = paymentContract;
     }
   }
 
   function pay(string externalPaymentId) payable {
-    Payment payment = payments[externalPaymentId];
-    if(payment.isDefined == false) {
+    PaymentContract payment = payments[externalPaymentId];
+    if(payment.isDefined() == false) {
       throw;
     } else {
-      PaymentContract paymentContract = PaymentContract(payment.paymentContract);
       uint payedPrice = msg.value;
-      uint price = paymentContract.price();
+      uint price = payment.price();
       if(payedPrice == price) {
-        paymentContract.pay.value(payedPrice)(msg.sender);
+        payment.pay.value(payedPrice)(msg.sender);
       } else {
         throw;
       }
@@ -63,12 +57,11 @@ contract Petunia is owned {
   }
 
   function complete(string externalPaymentId) onlyOwner {
-    Payment payment = payments[externalPaymentId];
-    if(payment.isDefined) {
-      PaymentContract paymentContract = PaymentContract(payment.paymentContract);
-      if(!paymentContract.isCompleted()) {
-        paymentContract.complete();
-        owner.transfer(paymentContract.price());
+    PaymentContract payment = payments[externalPaymentId];
+    if(payment.isDefined()) {
+      if(!payment.completed()) {
+        payment.complete();
+        owner.transfer(payment.price());
       } else {
         throw;
       }
@@ -76,18 +69,18 @@ contract Petunia is owned {
   }
 
   function isCompleted(string externalPaymentId) constant returns (bool) {
-    Payment payment = payments[externalPaymentId];
-    if(payment.isDefined) {
-      return PaymentContract(payment.paymentContract).isCompleted();
+    PaymentContract payment = payments[externalPaymentId];
+    if(payment.isDefined()) {
+      return payment.completed();
     } else {
       throw;
     }
   }
 
   function refund(string externalPaymentId) onlyOwner {
-    Payment payment = payments[externalPaymentId];
-    if(payment.isDefined) {
-      PaymentContract(payment.paymentContract).refund();
+    PaymentContract payment = payments[externalPaymentId];
+    if(payment.isDefined()) {
+      payment.refund();
     } else {
       throw;
     }
@@ -99,11 +92,16 @@ contract Petunia is owned {
 
 contract PaymentContract is owned {
     uint public price;
-    bool completed;
+    bool public completed;
     address buyerAddress;
 
     function pay(address _buyerAddress) payable onlyOwner {
       buyerAddress = _buyerAddress;
+    }
+
+    function isDefined() constant returns(bool) {
+      address my = this;
+      return my != 0x0;
     }
 
     function PaymentContract(uint _price) {
@@ -111,8 +109,7 @@ contract PaymentContract is owned {
     }
 
     function isPaid() onlyOwner constant returns (bool) {
-      address myAddress = this;
-      return myAddress.balance >= price;
+      return this.balance >= price;
     }
 
     function complete() onlyOwner payable {
@@ -122,9 +119,5 @@ contract PaymentContract is owned {
 
     function refund() onlyOwner payable {
       buyerAddress.transfer(this.balance);
-    }
-
-    function isCompleted() onlyOwner returns (bool) {
-      return completed;
     }
 }
