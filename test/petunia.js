@@ -26,32 +26,30 @@ const assertBalance = (account, expectedBalance) => {
   return getBalance(account).then(balance => assert.equals(balance, expectedBalance));
 };
 
-const price = web3.toBigNumber(web3.toWei(20, 'ether'));
+const price = web3.toBigNumber(web3.toWei(5, 'ether'));
 
 contract('Petunia', (accounts) => {
 
-  // it('should start new payment', () => {
-  //   const paymentId = 'test1';
-  //   const watcher = petunia.NewPayment();
-  //   return petunia.startNewPayment(paymentId, price, {
-  //     from: accounts[0]
-  //   }).then(() => {
-  //     return watcher.get();
-  //   }).then((events) => {
-  //     assert.equal(events.length, 1);
-  //     actualPaymentId = events[0].args.externalPaymentId;
-  //     actualPrice = events[0].args.price;
-  //     assert.equal(actualPrice, price);
-  //     assert.equal(actualPaymentId, paymentId);
-  //   });
-  // });
-  //
+  it('should start new payment', () => {
+    const paymentId = 'test1';
+    var petunia;
+    return Petunia.deployed().then((instance) => {
+      petunia = instance;
+      return petunia.startNewPayment(paymentId, price, {
+        from: accounts[0]
+      });
+    }).then(() => {
+      return petunia.checkIfPaymentExists.call(paymentId);
+    }).then((paymentExist) => {
+      assert.equal(paymentExist, true);
+    });
+  });
+
 
   it('should check if payument exist', () => {
     const paymentId = 'test2';
-    Petunia.deployed().then((instance) => {
+    return Petunia.deployed().then((instance) => {
       petunia = instance;
-      console.log("here we start test!!!!");
       return petunia.checkIfPaymentExists.call(paymentId).then((result) => {
         assert.equal(result, false);
       }).then(() => {
@@ -65,21 +63,25 @@ contract('Petunia', (accounts) => {
       });
     });
   });
-  //
-  // it('payment creation should fail', () => {
-  //   const paymentId = 'test3';
-  //   return petunia.startNewPayment(paymentId, price, {
-  //     from: accounts[0]
-  //   }).then(() => {
-  //     return petunia.startNewPayment(paymentId, price, {
-  //       from: accounts[0]
-  //     });
-  //   }).then((events) => {
-  //     assert.equal(false, true);
-  //   }).catch((error) => {
-  //     assert.equal(true, true);
-  //   });
-  // });
+
+  it('payment creation should fail', () => {
+    var petunia;
+    const paymentId = 'test3';
+    return Petunia.deployed().then((instance) => {
+      petunia = instance;
+      return petunia.startNewPayment(paymentId, price, {
+        from: accounts[0]
+      });
+    }).then(() => {
+      return petunia.startNewPayment(paymentId, price, {
+        from: accounts[0]
+      });
+    }).then((events) => {
+      assert.equal(false, true);
+    }).catch((error) => {
+      assert.equal(true, true);
+    });
+  });
 
   it('should print the gas price', () => {
     return getGasPrice().then((gasPrice) => {
@@ -94,10 +96,9 @@ contract('Petunia', (accounts) => {
     const paymentId = 'test4';
     var initalSellerBalance, finalSellerBalance, initalBuyerBalance, finalBuyerBalance;
     const sellerAccount = accounts[0];
-    const buyerAccount = accounts[2];
+    const buyerAccount = accounts[1];
     return Petunia.deployed().then((instance) => {
       petunia = instance;
-      console.log("here we start test!!!!");
       return getBalance(sellerAccount);
     }).then(balance => {
       initalSellerBalance = balance;
@@ -133,12 +134,16 @@ contract('Petunia', (accounts) => {
       finalBuyerBalance = balance;
       const sellerDelta = finalSellerBalance.minus(initalSellerBalance);
       const sellerGas = price.minus(sellerDelta);
+      const sellerGasInGas = sellerGas.dividedToIntegerBy(web3.toBigNumber('0.00000002'));
       console.log('seller delta:' + web3.fromWei(sellerDelta, 'ether'));
       console.log('seller gas  :' + web3.fromWei(sellerGas, 'ether'));
+      console.log('gas in gas  :' + web3.fromWei(sellerGasInGas, 'ether'));
       const buyerDelta = finalBuyerBalance.minus(initalBuyerBalance);
       const buyerGas = price.plus(buyerDelta);
+      const buyerGasInGas = buyerGas.dividedToIntegerBy(web3.toBigNumber('0.00000002')).abs();
       console.log('buyer delta:' + web3.fromWei(buyerDelta, 'ether'));
       console.log('buyer gas  :' + web3.fromWei(buyerGas, 'ether'));
+      console.log('gas in gas :' + web3.fromWei(buyerGasInGas, 'ether'));
     }).catch((error) => {
       console.log("error:" + error);
       assert.equal(true, false);

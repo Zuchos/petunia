@@ -1,4 +1,4 @@
-pragma solidity ^0.4.4;
+pragma solidity ^0.4.10;
 
 contract owned {
     function owned() { owner = msg.sender; }
