@@ -1,0 +1,17 @@
+{
+  "name": "petunia",
+  "version": "1.0.0",
+  "dependencies": {
+    "body-parser": "^1.17.2",
+    "express": "^4.15.4",
+    "web3": "0.20.0"
+  },
+  "semistandard": {
+    "globals": [
+      "web3",
+      "assert",
+      "it",
+      "contract"
+    ]
+  }
+}
