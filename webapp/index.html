@@ -1,0 +1,36 @@
+<html>
+
+<head>
+  <script src="petuniaClient.js"></script>
+</head>
+
+<body>
+  Hello!
+  <div id="isPaid">
+    ...
+  </div>
+  <div id="account">
+  </div>
+  <button onclick="petunia.pay()">Pay</button>
+  <button onclick="petunia.isPaid()">isPaid</button>
+  <script>
+    const paymentInfo = () => document.getElementById("isPaid");
+    const account = () => document.getElementById("account");
+    var petunia = {};
+    window.addEventListener('load', function() {
+          if (typeof web3 !== 'undefined' && typeof Web3 !== 'undefined') {
+            web3 = new Web3(web3.currentProvider);
+          } else if (typeof Web3 !== 'undefined') {
+            console.log('No web3? You should consider trying MetaMask!')
+            web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+          }
+
+          web3.eth.getBalance(contractAddress, 'latest', (e,r) => element().innerHTML = "Current balance is: " + web3.fromWei(r, 'ether') + " ETH");
+
+          petunia = loadContract(web3);
+          account().innerHTML = petunia.account;
+        });
+  </script>
+</body>
+
+</html>
