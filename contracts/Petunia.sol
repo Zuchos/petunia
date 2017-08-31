@@ -15,109 +15,70 @@ contract owned {
  */
 contract Petunia is owned {
 
-  mapping (string => PaymentContract) payments;
+  address billingAddress;
 
-  function isPaid(string externalPaymentId) constant returns (bool) {
-    PaymentContract payment = payments[externalPaymentId];
-    if(payment.isDefined()) {
-      return payment.isPaid();
-    } else {
-      throw;
-    }
+  struct Payment {
+    uint price;
+    bool paid;
+    bool isCompleted;
+    address buyer;
   }
 
-  function checkIfPaymentExists(string externalPaymentId) constant returns(bool) {
-    PaymentContract payment = payments[externalPaymentId];
-    address addr = payment;
-    return addr != 0x0;
+  mapping (uint => Payment) payments;
+
+  event PaymentPaid(uint externalPaymentId);
+
+  function Petunia(address _billingAddress){
+    billingAddress = _billingAddress;
   }
 
-  function startNewPayment(string externalPaymentId, uint price) onlyOwner {
-    if(checkIfPaymentExists(externalPaymentId)) {
-      throw;
-    } else {
-      PaymentContract paymentContract = new PaymentContract(price);
-      payments[externalPaymentId] = paymentContract;
-    }
+  function getBillingAddress() constant returns (address) {
+    return billingAddress;
   }
 
-  function pay(string externalPaymentId) payable {
-    PaymentContract payment = payments[externalPaymentId];
-    if(payment.isDefined() == false) {
-      throw;
-    } else {
-      uint payedPrice = msg.value;
-      uint price = payment.price();
-      if(payedPrice == price) {
-        payment.pay.value(payedPrice)(msg.sender);
-      } else {
-        throw;
-      }
-    }
+  function isPaid(uint externalPaymentId) constant returns (bool) {
+    Payment payment = payments[externalPaymentId];
+    require(payment.price > 0);
+    return payment.paid;
   }
 
-  function complete(string externalPaymentId) onlyOwner {
-    PaymentContract payment = payments[externalPaymentId];
-    if(payment.isDefined()) {
-      if(!payment.completed()) {
-        payment.complete();
-        owner.transfer(payment.price());
-      } else {
-        throw;
-      }
-    }
+  function checkIfPaymentExists(uint externalPaymentId) constant returns(bool) {
+    Payment payment = payments[externalPaymentId];
+    return payment.price > 0;
   }
 
-  function isCompleted(string externalPaymentId) constant returns (bool) {
-    PaymentContract payment = payments[externalPaymentId];
-    if(payment.isDefined()) {
-      return payment.completed();
-    } else {
-      throw;
-    }
+  function startNewPayment(uint externalPaymentId, uint price) onlyOwner {
+    require(!checkIfPaymentExists(externalPaymentId) && price > 0);
+    payments[externalPaymentId] = Payment(price, false, false, 0x0);
   }
 
-  function refund(string externalPaymentId) onlyOwner {
-    PaymentContract payment = payments[externalPaymentId];
-    if(payment.isDefined()) {
-      payment.refund();
-    } else {
-      throw;
-    }
+  function pay(uint externalPaymentId) payable {
+    Payment payment = payments[externalPaymentId];
+    require(payment.price > 0 && msg.value == payment.price);
+    payment.paid = true;
+    payment.buyer = msg.sender;
+  }
+
+  function complete(uint externalPaymentId) onlyOwner {
+    Payment payment = payments[externalPaymentId];
+    require(payment.price > 0 && !payment.isCompleted);
+    billingAddress.transfer(payment.price);
+    payment.isCompleted = true;
+  }
+
+
+  function isCompleted(uint externalPaymentId) constant returns (bool) {
+    Payment payment = payments[externalPaymentId];
+    require(payment.price > 0);
+    return payment.isCompleted;
+  }
+
+  function refund(uint externalPaymentId) onlyOwner {
+    Payment payment = payments[externalPaymentId];
+    require(payment.price > 0 && !payment.isCompleted);
+    payment.buyer.transfer(payment.price);
   }
 
   //fallback function is implemented to recieve transfers
   function() payable {}
-}
-
-contract PaymentContract is owned {
-    uint public price;
-    bool public completed;
-    address buyerAddress;
-
-    function pay(address _buyerAddress) payable onlyOwner {
-      buyerAddress = _buyerAddress;
-    }
-
-    function isDefined() constant returns(bool) {
-      address my = this;
-      return my != 0x0;
-    }
-
-    function PaymentContract(uint _price) {
-      price = _price;
-    }
-
-    function isPaid() onlyOwner constant returns (bool) {
-      return this.balance >= price;
-    }
-
-    function complete() onlyOwner payable {
-      owner.transfer(this.balance);
-      completed = true;
-    }
-
-    function refund() onlyOwner payable {
-      buyerAddress.transfer(this.balance);
-    }
 }

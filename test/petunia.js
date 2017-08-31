@@ -22,6 +22,7 @@ const getGasPrice = () => {
     });
   });
 };
+
 const assertBalance = (account, expectedBalance) => {
   return getBalance(account).then(balance => assert.equals(balance, expectedBalance));
 };
@@ -30,14 +31,23 @@ const price = web3.toBigNumber(web3.toWei(5, 'ether'));
 
 contract('Petunia', (accounts) => {
 
-  it('should start new payment', () => {
-    const paymentId = 'test1';
+  it('billingAddress should be not empty', () => {
+    const paymentId = '0';
     var petunia;
     return Petunia.deployed().then((instance) => {
       petunia = instance;
-      return petunia.startNewPayment(paymentId, price, {
-        from: accounts[0]
-      });
+      return petunia.getBillingAddress.call();
+    }).then((address) => {
+      assert.equal(address, accounts[8]);
+    });
+  });
+
+  it('should start new payment', () => {
+    const paymentId = '1';
+    var petunia;
+    return Petunia.deployed().then((instance) => {
+      petunia = instance;
+      return petunia.startNewPayment(paymentId, price, {from: accounts[0]});
     }).then(() => {
       return petunia.checkIfPaymentExists.call(paymentId);
     }).then((paymentExist) => {
@@ -47,7 +57,7 @@ contract('Petunia', (accounts) => {
 
 
   it('should check if payument exist', () => {
-    const paymentId = 'test2';
+    const paymentId = '2';
     return Petunia.deployed().then((instance) => {
       petunia = instance;
       return petunia.checkIfPaymentExists.call(paymentId).then((result) => {
@@ -66,7 +76,7 @@ contract('Petunia', (accounts) => {
 
   it('payment creation should fail', () => {
     var petunia;
-    const paymentId = 'test3';
+    const paymentId = '3';
     return Petunia.deployed().then((instance) => {
       petunia = instance;
       return petunia.startNewPayment(paymentId, price, {
@@ -77,9 +87,9 @@ contract('Petunia', (accounts) => {
         from: accounts[0]
       });
     }).then((events) => {
-      assert.equal(false, true);
+      assert.fail(events);
     }).catch((error) => {
-      assert.equal(true, true);
+      assert.ok(true);
     });
   });
 
@@ -93,11 +103,12 @@ contract('Petunia', (accounts) => {
 
   it('should follow the payment process to the successful end', () => {
     var petunia;
-    const paymentId = 'test4';
-    var initalSellerBalance, finalSellerBalance, initalBuyerBalance, finalBuyerBalance;
+    const paymentId = '4';
+    var initalSellerBalance, finalSellerBalance, initalBuyerBalance, finalBuyerBalance, initialBillingBalance, finalBillingBalance;
     const sellerAccount = accounts[0];
+    const billingAccount = accounts[2];
     const buyerAccount = accounts[1];
-    return Petunia.deployed().then((instance) => {
+    return Petunia.new(billingAccount).then((instance) => {
       petunia = instance;
       return getBalance(sellerAccount);
     }).then(balance => {
@@ -105,6 +116,9 @@ contract('Petunia', (accounts) => {
       return getBalance(buyerAccount);
     }).then(balance => {
       initalBuyerBalance = balance;
+      return getBalance(billingAccount);
+    }).then(balance => {
+      initialBillingBalance = balance;
       return petunia.startNewPayment(paymentId, price, {
         from: sellerAccount
       });
@@ -132,10 +146,11 @@ contract('Petunia', (accounts) => {
       return getBalance(buyerAccount);
     }).then((balance) => {
       finalBuyerBalance = balance;
-      const sellerDelta = finalSellerBalance.minus(initalSellerBalance);
-      const sellerGas = price.minus(sellerDelta);
+      return getBalance(billingAccount);
+    }).then((balance) => {
+      finalBillingBalance = balance;
+      const sellerGas = finalSellerBalance.minus(initalSellerBalance);
       const sellerGasInGas = sellerGas.dividedToIntegerBy(web3.toBigNumber('0.00000002'));
-      console.log('seller delta:' + web3.fromWei(sellerDelta, 'ether'));
       console.log('seller gas  :' + web3.fromWei(sellerGas, 'ether'));
       console.log('gas in gas  :' + web3.fromWei(sellerGasInGas, 'ether'));
       const buyerDelta = finalBuyerBalance.minus(initalBuyerBalance);
@@ -144,9 +159,10 @@ contract('Petunia', (accounts) => {
       console.log('buyer delta:' + web3.fromWei(buyerDelta, 'ether'));
       console.log('buyer gas  :' + web3.fromWei(buyerGas, 'ether'));
       console.log('gas in gas :' + web3.fromWei(buyerGasInGas, 'ether'));
+      const billingDelta = finalBillingBalance.minus(initialBillingBalance);
+      assert.ok(web3.fromWei(billingDelta, 'ether').equals(web3.fromWei(price, 'ether')));
     }).catch((error) => {
-      console.log("error:" + error);
-      assert.equal(true, false);
+      assert.fail("error:" + error);
     });
   });
 });
