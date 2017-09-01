@@ -1,6 +1,6 @@
-export const contractAddress = '0xd426290396f25967b7f9b60e757e65cb8c0e22b1';
+exports.contractAddress = '0xaeca29988814ad814526621dac6ebf58008b2b76';
 
-export const contractABI = [
+exports.contractABI = [
   {
     "constant": true,
     "inputs": [
@@ -121,6 +121,24 @@ export const contractABI = [
     ],
     "name": "startNewPayment",
     "outputs": [],
+    "payable": false,
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "externalPaymentId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getPrice",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "payable": false,
     "type": "function"
   },

@@ -17,7 +17,17 @@
   "author": "Zuchos",
   "license": "ISC",
   "devDependencies": {
-    "nodemon": "^1.11.0"
+    "eslint": "^4.5.0",
+    "eslint-plugin-react": "^7.3.0"
+  },
+  "semistandard": {
+    "globals": [
+      "Web3",
+      "web3",
+      "assert",
+      "it",
+      "contract"
+    ]
   },
   "dependencies": {
     "body-parser": "^1.17.2",

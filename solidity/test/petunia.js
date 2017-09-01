@@ -38,7 +38,7 @@ contract('Petunia', (accounts) => {
       petunia = instance;
       return petunia.getBillingAddress.call();
     }).then((address) => {
-      assert.equal(address, accounts[8]);
+      assert.equal(address, accounts[4]);
     });
   });
 
@@ -88,8 +88,11 @@ contract('Petunia', (accounts) => {
       return petunia.startNewPayment(paymentId, price, {
         from: accounts[0]
       });
-    }).then((events) => {
+    }).then((r) => {
+      console("=============" + r);
       assert.fail(events);
+    }).catch(e => {
+      console.log(e);
     });
   });
 

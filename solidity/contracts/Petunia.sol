@@ -47,6 +47,12 @@ contract Petunia is owned {
     return payment.price > 0;
   }
 
+  function getPrice(uint externalPaymentId) constant returns(uint) {
+    Payment payment = payments[externalPaymentId];
+    require(payment.price > 0);
+    return payment.price;
+  }
+
   function startNewPayment(uint externalPaymentId, uint price) onlyOwner {
     require(!checkIfPaymentExists(externalPaymentId) && price > 0);
     payments[externalPaymentId] = Payment(price, false, false, 0x0);
