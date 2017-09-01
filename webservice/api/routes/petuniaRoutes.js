@@ -6,7 +6,7 @@ module.exports = function (app, web3) {
   app.route('/payment/:id/exists')
     .get(petuniaController.checkIfPaymentExists);
   app.route('/payment/:id/status')
-    .get(petuniaController.isPaid);
+    .get(petuniaController.getStatus);
   app.route('/payment')
     .post(petuniaController.initPayment);
   app.route('/payment/:id/refund')

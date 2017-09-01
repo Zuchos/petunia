@@ -19,8 +19,7 @@ contract Petunia is owned {
 
   struct Payment {
     uint price;
-    bool paid;
-    bool isCompleted;
+    uint8 status;
     address buyer;
   }
 
@@ -36,53 +35,61 @@ contract Petunia is owned {
     return billingAddress;
   }
 
-  function isPaid(uint externalPaymentId) constant returns (bool) {
+  function getStatus(uint externalPaymentId) constant returns (string) {
     Payment payment = payments[externalPaymentId];
-    require(payment.price > 0);
-    return payment.paid;
+    if(payment.status == 0) {
+      return 'NotExists';
+    }
+    if(payment.status == 1) {
+      return 'New';
+    }
+    if(payment.status == 2) {
+      return 'Paid';
+    }
+    if(payment.status == 3) {
+      return 'Completed';
+    }
+    if(payment.status == 4) {
+      return 'Refunded';
+    }
+    throw;
   }
 
   function checkIfPaymentExists(uint externalPaymentId) constant returns(bool) {
     Payment payment = payments[externalPaymentId];
-    return payment.price > 0;
+    return payment.status > 0;
   }
 
   function getPrice(uint externalPaymentId) constant returns(uint) {
     Payment payment = payments[externalPaymentId];
-    require(payment.price > 0);
+    require(payment.status > 0);
     return payment.price;
   }
 
   function startNewPayment(uint externalPaymentId, uint price) onlyOwner {
     require(!checkIfPaymentExists(externalPaymentId) && price > 0);
-    payments[externalPaymentId] = Payment(price, false, false, 0x0);
+    payments[externalPaymentId] = Payment(price, 1, 0x0);
   }
 
   function pay(uint externalPaymentId) payable {
     Payment payment = payments[externalPaymentId];
-    require(payment.price > 0 && msg.value == payment.price);
-    payment.paid = true;
+    require(payment.status == 1 && msg.value == payment.price);
+    payment.status = 2;
     payment.buyer = msg.sender;
   }
 
   function complete(uint externalPaymentId) onlyOwner {
     Payment payment = payments[externalPaymentId];
-    require(payment.price > 0 && !payment.isCompleted);
+    require(payment.price > 0 && payment.status == 2);
     billingAddress.transfer(payment.price);
-    payment.isCompleted = true;
-  }
-
-
-  function isCompleted(uint externalPaymentId) constant returns (bool) {
-    Payment payment = payments[externalPaymentId];
-    require(payment.price > 0);
-    return payment.isCompleted;
+    payment.status = 3;
   }
 
   function refund(uint externalPaymentId) onlyOwner {
     Payment payment = payments[externalPaymentId];
-    require(payment.price > 0 && !payment.isCompleted);
+    require(payment.price > 0 && payment.status == 2);
     payment.buyer.transfer(payment.price);
+    payment.status = 4;
   }
 
   //fallback function is implemented to recieve transfers

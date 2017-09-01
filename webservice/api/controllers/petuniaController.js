@@ -34,15 +34,13 @@ module.exports = function (web3) {
     });
   };
 
-  const isPaid = function (req, res) {
-    petunia.isPaid.call(req.params.id, (e, r) => {
-      console.log(e + r);
+  const getStatus = function (req, res) {
+    petunia.getStatus.call(req.params.id, (e, r) => {
       if (e) {
         res.status(500, e).end();
       } else {
         res.json({
-          status: 'OK',
-          paid: r
+          status: r
         });
       }
     });
@@ -56,7 +54,6 @@ module.exports = function (web3) {
         res.status(500, e).end();
       } else {
         res.json({
-          status: 'OK',
           txId: r
         });
       }
@@ -71,7 +68,6 @@ module.exports = function (web3) {
         res.status(500, e).end();
       } else {
         res.json({
-          status: 'OK',
           txId: r
         });
       }
@@ -81,7 +77,7 @@ module.exports = function (web3) {
   return {
     initPayment: initPayment,
     checkIfPaymentExists: checkIfPaymentExists,
-    isPaid: isPaid,
+    getStatus: getStatus,
     refund: refund,
     complete: complete
   };

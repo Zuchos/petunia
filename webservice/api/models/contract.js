@@ -1,4 +1,4 @@
-exports.contractAddress = '0xaeca29988814ad814526621dac6ebf58008b2b76';
+exports.contractAddress = '0x9bd0a645da0fb37d1c667c2105bc0256bc191d89';
 
 exports.contractABI = [
   {
@@ -40,11 +40,11 @@ exports.contractABI = [
         "type": "uint256"
       }
     ],
-    "name": "isCompleted",
+    "name": "getStatus",
     "outputs": [
       {
         "name": "",
-        "type": "bool"
+        "type": "string"
       }
     ],
     "payable": false,
@@ -87,24 +87,6 @@ exports.contractABI = [
     "name": "pay",
     "outputs": [],
     "payable": true,
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "externalPaymentId",
-        "type": "uint256"
-      }
-    ],
-    "name": "isPaid",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
     "type": "function"
   },
   {

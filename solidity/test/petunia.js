@@ -89,7 +89,6 @@ contract('Petunia', (accounts) => {
         from: accounts[0]
       });
     }).then((r) => {
-      console("=============" + r);
       assert.fail(events);
     }).catch(e => {
       console.log(e);
@@ -126,18 +125,18 @@ contract('Petunia', (accounts) => {
         from: sellerAccount
       });
     }).then(() => {
-      return petunia.isPaid.call(paymentId);
-    }).then((isPaid) => {
-      assert.equal(isPaid,  false, 'Payment should be not paid yet');
+      return petunia.getStatus.call(paymentId);
+    }).then((status) => {
+      assert.equal(status, 'New', 'Payment should be not paid yet');
     }).then(() => {
       return petunia.pay(paymentId, {
         from: buyerAccount,
         value: price
       });
     }).then(() => {
-      return petunia.isPaid.call(paymentId);
-    }).then((isPaid) => {
-      assert.equal(isPaid, true, 'Payment should be paid.');
+      return petunia.getStatus.call(paymentId);
+    }).then((status) => {
+      assert.equal(status, 'Paid', 'Payment should be paid.');
     }).then(() => {
       return petunia.complete(paymentId, {
         from: sellerAccount

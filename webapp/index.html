@@ -1,9 +1,10 @@
 <html>
+
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <!-- Angular -->
-  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.2/angular.min.js"/></script>
-  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.2/angular-route.js"/></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.2/angular.min.js" /></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.2/angular-route.js" /></script>
   <!-- Bootstrap -->
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
   <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
@@ -13,28 +14,46 @@
   <script src="petuniaClient.js"></script>
   <script src="app.js"></script>
 </head>
+
 <body ng-app="app">
-  <div class="container" ng-controller="PaymentController">
-    <h1>Petunia - pay with Ethereum</h1>
-    <div id="pay" class="card">
-      <div class="card-header">Payment ID: {{paymentId}}</div>
-      <div class="card-body">
-        <dl>
-          <dt>Price</dt>
-          <dd>{{priceInEth}} ETH</dd>
-          <dt>Status</dt>
-          <dd>{{status}}</dd>
-        </dl>
-        <span>{{params}}</span>
+  <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+    <a class="navbar-brand" href="#">Petunia</a>
+  </nav>
+  <div class="jumbotron">
+    <div class="container">
+      <h1 class="display-5">Pay with</h1>
+      <img width="50%" src="resources/ethereum.png" style="padding: 20px 20px 20px">
+      <div class="test-right">
+        <blockquote class="blockquote mb-0 mb-offest-1">
+          <p>Smart contract based payment processor for ecommerce.</p>
+        </blockquote>
       </div>
-      <div class="card-footer">
-        <button ng-if="status == 'New'" class="btn btn-primary" ng-click="pay()">Pay</button>
-        <button ng-if="status == 'Paid'" class="btn btn-primary" ng-click="goToStore()">Go back to store</button>
-        <div ng-if="status == 'InProgress'" class="progress">
-          <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
+    </div>
+  </div>
+  <div class="container" ng-controller="PaymentController">
+    <div class="row justify-content-sm-center">
+      <div id="pay" class="col-sm-4">
+        <div class="card">
+          <div class="card-header">Payment ID: {{paymentId}}</div>
+          <div class="card-body">
+            <h4>Your payment:</h4>
+            <dl>
+              <dt>Price</dt>
+              <dd>{{priceInEth}} ETH</dd>
+              <dt>Status</dt>
+              <dd>{{status}}</dd>
+            </dl>
+            <span>{{params}}</span>
+            <button ng-if="status == 'New'" class="btn btn-primary" ng-click="pay()">Pay</button>
+            <button ng-if="status == 'Paid'" class="btn btn-primary" ng-click="goToStore()">Go back to store</button>
+            <div ng-if="status == 'InProgress'" class="progress">
+              <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </body>
+
 </html>
