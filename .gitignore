@@ -3,3 +3,4 @@ solidity/build/*
 petunia.iml
 webservice/node_modules/*
 webapp/node_modules/*
+solidity/node_modules/*

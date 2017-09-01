@@ -1,0 +1,22 @@
+{
+  "name": "petunia",
+  "version": "1.0.0",
+  "dependencies": {
+    "body-parser": "^1.17.2",
+    "express": "^4.15.4",
+    "web3": "0.20.0"
+  },
+  "semistandard": {
+    "globals": [
+      "Web3",
+      "web3",
+      "assert",
+      "it",
+      "contract"
+    ]
+  },
+  "devDependencies": {
+    "eslint": "^4.5.0",
+    "eslint-plugin-react": "^7.3.0"
+  }
+}
