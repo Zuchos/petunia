@@ -6,6 +6,7 @@ module.exports = function (web3) {
 
   const initPayment = function (req, res) {
     const input = req.body;
+    console.log(input);
     const price = web3.toBigNumber(web3.toWei(input.price, 'szabo'));
     petunia.startNewPayment(input.id, price, {
       from: petunia.account

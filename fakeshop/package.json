@@ -1,0 +1,38 @@
+{
+  "name": "fakeShop",
+  "version": "1.0.0",
+  "description": "Webservice to initiate payment in smart contract called Petunia",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon server.js"
+  },
+  "keywords": [
+    "eth",
+    "smart",
+    "contracts",
+    "web",
+    "service"
+  ],
+  "author": "Zuchos",
+  "license": "ISC",
+  "devDependencies": {
+    "eslint": "^4.5.0",
+    "eslint-plugin-react": "^7.3.0",
+    "nodemon": "^1.11.0"
+  },
+  "semistandard": {
+    "globals": [
+      "Web3",
+      "web3",
+      "assert",
+      "it",
+      "contract"
+    ]
+  },
+  "dependencies": {
+    "body-parser": "^1.17.2",
+    "express": "^4.15.4",
+    "web3": "0.20.0"
+  }
+}
