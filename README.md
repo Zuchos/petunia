@@ -1,6 +1,10 @@
 # Petunia
 Petunia is my pet project to get familiar with Ethereum. It's easy to use e-commerce payment gate.
 
+## Blog post
+Here is a blogpost explaining how it works
+https://medium.com/@zuchos/smart-contract-payment-gate-for-e-commerce-ea8a078aca6e
+
 ## How to run it?
 Install following using npm:
 - truffle
